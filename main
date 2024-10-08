@@ -1,0 +1,69 @@
+function countCheckboxChoices() {
+  var form = FormApp.openById('1znaH2KR0xiD8Kk6jBipNxxmpL9ALl1uIqOFBMckmkhs');
+  var responses = form.getResponses();
+  var checkBoxItems = form.getItems(FormApp.ItemType.CHECKBOX);
+  var checkBoxItem = checkBoxItems[0].asCheckboxItem();
+  var choices = checkBoxItem.getChoices();
+  var items = form.getItems();
+
+  // สร้างอ็อบเจ็กต์เก็บจำนวนการเลือกของแต่ละตัวเลือก และจำนวนสูงสุดที่ตอบได้
+  var maxSelections = {
+    "องค์ตี๋ฮู้อ๋องเอี๋ย เนื้อไม้ ขนาด 4 นิ้ว (ขนาดบูชา) ราคา 2,499 +ค่าส่ง100=2,599": 10,
+    "องค์ตี๋ฮู้อ๋องเอี๋ย เนื้อไม้ ขนาด 3 เซนติเมตร (ขนาดบูชา) ราคา 499 +ค่าส่ง100=599": 300
+  };
+  
+  var choiceCount = {};
+  for (var i = 0; i < choices.length; i++) {
+    choiceCount[choices[i].getValue()] = 0;  // เริ่มต้นการนับเป็น 0
+  }
+
+  // วนลูปนับจำนวนครั้งที่แต่ละตัวเลือกถูกเลือก
+  for (var i = 0; i < responses.length; i++) {
+    var response = responses[i];
+    var answers = response.getItemResponses();
+
+    for (var j = 0; j < answers.length; j++) {
+      var itemResponse = answers[j];
+      if (itemResponse.getItem().getTitle() === checkBoxItem.getTitle()) {
+        var selectedChoices = itemResponse.getResponse();
+
+        // เพิ่มจำนวนการเลือกสำหรับแต่ละตัวเลือกที่ถูกเลือก
+        for (var k = 0; k < selectedChoices.length; k++) {
+          var selected = selectedChoices[k];
+          if (choiceCount[selected] !== undefined) {
+            choiceCount[selected]++;
+          }
+        }
+      }
+    }
+  }
+
+  // สร้างตัวเลือกใหม่โดยเปลี่ยนข้อความและ disable ตัวเลือกที่เต็มแล้ว
+  var newChoices = [];
+  for (var choice in choiceCount) {
+    Logger.log("maxselec : "+maxSelections[choice]);
+    Logger.log("choiceCount : "+choiceCount[choice]);
+    // ตรวจสอบว่าตัวเลือกนี้ถึงจำนวนสูงสุดที่กำหนดหรือไม่
+    if (choiceCount[choice] >= maxSelections[choice]) {
+      // ตัวเลือกนี้เต็มแล้ว, เพิ่มข้อความว่า "จองครบจำนวน" และ disable ตัวเลือก
+      Logger.log("inhere");
+      newChoices.push(checkBoxItem.createChoice(choice + " (จองครบจำนวน)", true));
+    } else {
+      // ตัวเลือกนี้ยังสามารถเลือกได้
+      newChoices.push(checkBoxItem.createChoice(choice, false));
+    }
+  }
+
+  // อัปเดต checkbox ด้วยตัวเลือกใหม่
+  checkBoxItem.setChoices(newChoices);
+
+  // สำหรับการ debug, log จำนวนการเลือกของแต่ละตัวเลือก
+  for (var choice in choiceCount) {
+    Logger.log("ตัวเลือก: " + choice + " ถูกเลือกไปแล้ว: " + choiceCount[choice] + " ครั้ง");
+  }
+
+  // log ข้อมูลของแต่ละ item ในฟอร์ม (สำหรับการ debug)
+  for (var i = 0; i < items.length; i++) {
+    Logger.log("Item " + i + " (ID: " + items[i].getId() + ") Type: " + items[i].getType());
+  }
+}
