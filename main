@@ -1,5 +1,5 @@
 function countCheckboxChoices() {
-  var form = FormApp.openById('1znaH2KR0xiD8Kk6jBipNxxmpL9ALl1uIqOFBMckmkhs');
+  var form = FormApp.openById('Your From ID');
   var responses = form.getResponses();
   var checkBoxItems = form.getItems(FormApp.ItemType.CHECKBOX);
   var checkBoxItem = checkBoxItems[0].asCheckboxItem();
